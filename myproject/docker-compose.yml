@@ -1,0 +1,42 @@
+version: 'latest'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=myprojectDB
+      - POSTGRES_USER=garyFernandez
+      - POSTGRES_PASSWORD=gary123123
+    ports:
+      - "8765:5432" #Mapeamos internamente al puerto 8765
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  webapp:
+    depends_on:
+      - db
+    build: .
+    environment:
+      - DATABASE_NAME=myprojectDB
+      - DATABASE_USER=garyFernandez
+      - DATABASE_PASSWORD=gary123123
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@email.com
+      - DJANGO_SUPERUSER_PASSWORD=admin123123
+      - DJANGO_SETTINGS_MODULE=myproject.settings
+    
+    command: sh -c "sleep 30 &&
+                    python manage.py makemigrations && 
+                    python manage.py migrate &&
+                    python config_script.py &&
+                    python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+
+volumes:
+  postgres_data:
